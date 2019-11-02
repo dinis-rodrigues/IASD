@@ -19,21 +19,52 @@ class Airplane():
         self.code = code
         self.t_arr = t_arr
         self.t_avail = t_avail
-
+        
     # By doing this, when we print the object, we get all the attributes printed
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
-
+    
+    # Auxiliary Function
+    def __members(self):
+        return (self.code, self.classe)
+    
+    # Checks the equality between two possible objects
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__members() == other.__members()
+        else:
+            return False
+        
+    # Hashes the object
+    def __hash__(self):
+        return hash(self.__members())
+        
 class Airport():
 
     def __init__(self, t_open=None, t_close=None, code=None):
         self.t_open = t_open
         self.t_close = t_close
         self.code = code
-
+        
     # By doing this, when we print the object, we get all the attributes printed
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
+    
+    # Auxiliary Function
+    def __members(self):
+        return (self.code, self.t_close)
+    
+    # Checks the equality between two possible objects
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__members() == other.__members()
+        else:
+            return False
+        
+    # Hashes the object
+    def __hash__(self):
+        return hash(self.__members())
+    
 
 class Leg():
 
@@ -47,10 +78,25 @@ class Leg():
         self.a_arr = a_arr
         self.dl = dl
         self.profit = profit
-
+    
     # By doing this, when we print the object, we get all the attributes printed
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
+    
+    # Auxiliary Function
+    def __members(self):
+        return (self.a_dep, self.dl)
+    
+    # Checks the equality between two possible objects
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__members() == other.__members()
+        else:
+            return False
+        
+    # Checks the equality between two possible objects
+    def __hash__(self):
+        return hash(self.__members())
 
 
 class State():
@@ -66,6 +112,20 @@ class State():
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
 
+    # Auxiliary Function
+    def __members(self):
+        return (self.p_list, self.l_list)
+    
+    # Checks the equality between two possible objects
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__members() == other.__members()
+        else:
+            return False
+        
+    # Checks the equality between two possible objects
+    def __hash__(self):
+        return hash(self.__members())
 
 
 
@@ -87,9 +147,9 @@ class ASARProblem(search.Problem):
                 if plane.pos == 0: #if it's the initial state, create a list of all the initial actions
                     pass
                     # --------------------------------------
-
-                elif (leg.a_dep == plane.pos) && (leg.a_arr.t_open < (plane.t_avail + leg.dl) < leg.a_arr.t_close) && (leg.a_dep.t_open < plane.t_avail < leg.a_dep.t_close):
+                elif (leg.a_dep == plane.pos) and (leg.a_arr.t_open < (plane.t_avail + leg.dl) < leg.a_arr.t_close) and (leg.a_dep.t_open < plane.t_avail < leg.a_dep.t_close):
                     possible_actions.append([plane, leg])
+
                     
         pass
 
@@ -105,35 +165,16 @@ class ASARProblem(search.Problem):
     def heuristic(self, node):
         # note: use node.state to access the state
         pass
-        
-    def load(self, fh):
-        # note: fh is an opened file object
-        # note: self.initial may also be initialized here
-        pass
     
     def save(self, fh, state):
         # note: fh is an opened file object
-        pass
-            for plane in s.p_list:
-                if plane.
+        # for plane in self.airplanes:
+        #     if plane:
+        #         pass
 
-        pass
-
-    def result(self, state, action):
-        pass
-        
-    def goal_test(self, state):
-        pass
-        
-    def path_cost(self, c, state1, action, state2):
-        pass
-        
-    def heuristic(self, node):
-        # note: use node.state to access the state
         pass
         
     def load(self, fh):
-        def load(self, fh):
         # note: fh is an opened file object
         # note: self.initial may also be initialized here
         
@@ -145,10 +186,10 @@ class ASARProblem(search.Problem):
             else:
                 line = line.replace("\n", "")
                 lines.append(line)
-               
+                
         # sort list to do airplanes first, then legs, then planes and finnaly classes
         sort_order = ['A', 'L', 'P', 'C'] 
-        res = [tuple for x in sort_order for tuple in lines if tuple[0] == x]
+        lines = [tuple for x in sort_order for tuple in lines if tuple[0] == x]
         
         # Create and store objects from the information of lines in this loop
         for line in lines:
@@ -204,7 +245,4 @@ class ASARProblem(search.Problem):
                 except:
                     print("There's a line starting with 'C' that ins't properly defined")
     
-    def save(self, fh, state):
-        # note: fh is an opened file object
-        pass
 
