@@ -143,6 +143,7 @@ class ASARProblem(search.Problem):
         self.airplanes = []
         self.airports = []
         self.legs = []
+        self.possible_actions = []
         
     
     def actions(self, s):
@@ -156,11 +157,14 @@ class ASARProblem(search.Problem):
                     # --------------------------------------
                 elif (leg.a_dep.code == plane.pos) and (leg.a_arr.t_open < (plane.t_avail + leg.dl) < leg.a_arr.t_close) and (leg.a_dep.t_open < plane.t_avail < leg.a_dep.t_close):
                     possible_actions.append([plane, leg])
-
-                    
+        return possible_actions
         pass
 
     def result(self, state, action):
+        if s = None: #Initial state
+            #-----
+        else:
+            
         pass
         
     def goal_test(self, state):
