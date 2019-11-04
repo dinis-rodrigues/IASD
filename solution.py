@@ -220,7 +220,7 @@ class ASARProblem(search.Problem):
                             air_dep=airports[i]
                         if airports[i].code == a_arr:
                             air_arr=airports[i]
-                    new_leg = Leg(air_dep, air_arr, dl, profit={})
+                    new_leg = Leg(air_dep, air_arr, int(dl), profit={})
                     # The loop goes 2 by 2
                     for number in range(4, len(words), 2):
                         classe = words[number]
