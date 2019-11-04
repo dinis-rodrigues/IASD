@@ -3,9 +3,12 @@
 import search
 
 def calculate_time(t):
-    hours = int(t*0.01)
-    minutes = abs(t - hours*100)
-    time_min = hours*60 + minutes
+    if t < 100:
+        minutes = t
+    else:
+        hours = int(t*0.01)
+        minutes = abs(t - hours*100)
+        time_min = hours*60 + minutes
     return time_min
 
 class Airplane():
