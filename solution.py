@@ -2,6 +2,13 @@
 
 import search
 
+def calculate_time(t):
+    hours = int(t*0.01)
+    minutes = abs(t - hours*100)
+    print(hours, minutes)
+    time_min = hours*60 + minutes
+    return time_min
+
 class Airplane():
 
     def __init__(self, classe=None, t_rot=None, pos=None, pos_init=None, code=None, t_arr=None, t_avail=None):
@@ -147,7 +154,7 @@ class ASARProblem(search.Problem):
                 if plane.pos == 0: #if it's the initial state, create a list of all the initial actions
                     pass
                     # --------------------------------------
-                elif (leg.a_dep == plane.pos) and (leg.a_arr.t_open < (plane.t_avail + leg.dl) < leg.a_arr.t_close) and (leg.a_dep.t_open < plane.t_avail < leg.a_dep.t_close):
+                elif (leg.a_dep.code == plane.pos) and (leg.a_arr.t_open < (plane.t_avail + leg.dl) < leg.a_arr.t_close) and (leg.a_dep.t_open < plane.t_avail < leg.a_dep.t_close):
                     possible_actions.append([plane, leg])
 
                     
@@ -208,7 +215,12 @@ class ASARProblem(search.Problem):
                 try:
                     a_dep, a_arr, dl = words[1:4]
                     # initialize a Leg object from the first 4 key informations
-                    new_leg = Leg(a_dep, a_arr, dl, profit={})
+                    for i in range(len(airports)):
+                        if airports[i].code == a_dep:
+                            air_dep=airports[i]
+                        if airports[i].code == a_arr:
+                            air_arr=airports[i]
+                    new_leg = Leg(air_dep, air_arr, dl, profit={})
                     # The loop goes 2 by 2
                     for number in range(4, len(words), 2):
                         classe = words[number]
