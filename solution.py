@@ -5,7 +5,6 @@ import search
 def calculate_time(t):
     hours = int(t*0.01)
     minutes = abs(t - hours*100)
-    print(hours, minutes)
     time_min = hours*60 + minutes
     return time_min
 
