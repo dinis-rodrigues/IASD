@@ -182,14 +182,11 @@ class ASARProblem(search.Problem):
                 new_state = copy.deepcopy(state)
 
                 for plane in new_state.p_list:
-                    print(plane.code)
                     if plane.__eq__(action[0]):
                         plane.pos = action[1].a_arr.code
                         plane.t_arr = action[0].t_avail + action[1].dl
                         plane.t_avail = plane.t_arr + plane.t_rot
                 for leg in new_state.l_list:
-                    print(leg.a_dep.code, leg.a_arr.code)
-                    print(action[1].a_dep.code, action[1].a_arr.code)
                     if leg.__eq__(action[1]):
                         leg.flight=[action[0].code, action[0].t_avail, leg.profit[action[0].classe]]
 
