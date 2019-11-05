@@ -212,7 +212,7 @@ class ASARProblem(search.Problem):
                 try:
                     code, t_open, t_close = words[1:]
                     # create and append a new airport object into the airports list
-                    self.airports.append(Airport(int(t_open), int(t_close), code))
+                    self.airports.append(Airport(calculate_time(int(t_open)), calculate_time(int(t_close)), code))
                 except:
                     print("There's a line starting with 'A' that ins't properly defined")
 
@@ -226,7 +226,7 @@ class ASARProblem(search.Problem):
                             air_dep=airports[i]
                         if airports[i].code == a_arr:
                             air_arr=airports[i]
-                    new_leg = Leg(air_dep, air_arr, int(dl), profit={})
+                    new_leg = Leg(air_dep, air_arr, calculate_time(int(dl)), profit={})
                     # The loop goes 2 by 2
                     for number in range(4, len(words), 2):
                         classe = words[number]
@@ -257,7 +257,7 @@ class ASARProblem(search.Problem):
                     # and update the rotation time
                     for plane in self.airplanes:
                         if plane.classe == classe:
-                            plane.t_rot = dr
+                            plane.t_rot = calculate_time(int(dr))
                         else:
                             pass
                 except:
