@@ -163,7 +163,7 @@ class ASARProblem(search.Problem):
         pass
 
     def result(self, state, action):
-        if s = None: #Initial state
+        if s == None: #Initial state
             #-----
         else:
             
