@@ -78,18 +78,20 @@ class Airport():
 
 class Leg():
 
-    def __init__(self, a_dep=None, a_arr=None, dl=None, profit={}, flight = [0,0,0]):
+    def __init__(self, a_dep=None, a_arr=None, dl=None, profit={}, flight=None, done=False):
         # a_dep -> departure airport
         # a_arr -> arrival airport
         # dl -> leg duration
         # profit -> dictionary of all class profits
         # flight -> [plane that flew, time of departure of that plane, profit of that flight]
-        
+        # done -> True if the leg was already done, False otherwise
+
         self.a_dep = a_dep
         self.a_arr = a_arr
         self.dl = dl
         self.profit = profit
         self.flight = flight
+        self.done = done
     
     # By doing this, when we print the object, we get all the attributes printed
     def __str__(self):
@@ -113,12 +115,14 @@ class Leg():
 
 class State():
 
-    def __init__(self, p_list=None, l_list=None):
+    def __init__(self, p_list=None, l_list=None, p_cost=0):
         # p_list -> list of all airplanes
         # l_list -> list of all legs that need to be done
+        # p_cost -> cost of the path taken so far
 
         self.p_list = p_list
         self.l_list = l_list
+        self.p_cost = p_cost
 
     # By doing this, when we print the object, we get all the attributes printed
     def __str__(self):
@@ -156,12 +160,13 @@ class ASARProblem(search.Problem):
         possible_actions = []
 
         for leg in s.l_list:
-            for plane in s.p_list:
-                if plane.pos == 0: #if it's the initial state, create a list of all the initial actions
-                    pass
-                    # --------------------------------------
-                elif (leg.a_dep.code == plane.pos) and (leg.a_arr.t_open < (plane.t_avail + leg.dl) < leg.a_arr.t_close) and (leg.a_dep.t_open < plane.t_avail < leg.a_dep.t_close):
-                    possible_actions.append([plane, leg])
+            if not leg.done: #if the leg is not done
+                for plane in s.p_list:
+                    if plane.pos == 0: #if it's the initial state, create a list of all the initial actions
+                        pass
+                        # --------------------------------------
+                    elif (leg.a_dep.code == plane.pos) and (leg.a_arr.t_open <= (plane.t_avail + leg.dl) <= leg.a_arr.t_close) and (leg.a_dep.t_open <= plane.t_avail <= leg.a_dep.t_close):
+                        possible_actions.append([plane, leg])
         return possible_actions
         pass
 
@@ -189,11 +194,13 @@ class ASARProblem(search.Problem):
                 for leg in new_state.l_list:
                     if leg.__eq__(action[1]):
                         leg.flight=[action[0].code, action[0].t_avail, leg.profit[action[0].classe]]
+                        leg.done = True
 
         return new_state
         pass
         
-    def goal_test( state):
+    def goal_test(self, state):
+
         if state is None:
             return False
         else:
@@ -206,16 +213,17 @@ class ASARProblem(search.Problem):
         return True
         pass
         
-    def path_cost( c, state1, action, state2):
+    def path_cost(self, c, state1, action, state2):
 
         if state1 is None:
             c = c + 0
         else:
             c = c + 1/(action[1].profit[action[0].classe])
+        state2.p_cost = c
         return c  
         pass
 
-    def heuristic(node):
+    def heuristic(self, node):
         # note: use node.state to access the state
         h = 0
         return h
@@ -304,5 +312,3 @@ class ASARProblem(search.Problem):
                             pass
                 except:
                     print("There's a line starting with 'C' that ins't properly defined")
-    
-
