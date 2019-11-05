@@ -196,7 +196,17 @@ class ASARProblem(search.Problem):
         return new_state
         pass
         
-    def goal_test(self, state):
+    def goal_test( state):
+        if state is None:
+            return False
+        else:
+            for plane in state.p_list:
+                if plane.pos != plane.pos_init:
+                    return False
+            for leg in state.l_list:
+                if leg.flight is None:
+                    return False
+        return True
         pass
         
     def path_cost(self, c, state1, action, state2):
