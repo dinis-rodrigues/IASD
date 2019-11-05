@@ -77,12 +77,12 @@ class Airport():
 
 class Leg():
 
-    def __init__(self, a_dep=None, a_arr=None, dl=None, profit={}, flight):
+    def __init__(self, a_dep=None, a_arr=None, dl=None, profit={}, flight = [0,0,0]):
         # a_dep -> departure airport
         # a_arr -> arrival airport
         # dl -> leg duration
         # profit -> dictionary of all class profits
-        # flight -> [plane that flew the leg, time of departure of that plane]
+        # flight -> [plane that flew, time of departure of that plane, profit of that flight]
         
         self.a_dep = a_dep
         self.a_arr = a_arr
