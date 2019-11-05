@@ -77,16 +77,18 @@ class Airport():
 
 class Leg():
 
-    def __init__(self, a_dep=None, a_arr=None, dl=None, profit={}):
+    def __init__(self, a_dep=None, a_arr=None, dl=None, profit={}, flight):
         # a_dep -> departure airport
         # a_arr -> arrival airport
         # dl -> leg duration
         # profit -> dictionary of all class profits
+        # flight -> [plane that flew the leg, time of departure of that plane]
         
         self.a_dep = a_dep
         self.a_arr = a_arr
         self.dl = dl
         self.profit = profit
+        self.flight = flight
     
     # By doing this, when we print the object, we get all the attributes printed
     def __str__(self):
