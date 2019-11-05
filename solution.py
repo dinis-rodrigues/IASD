@@ -206,11 +206,19 @@ class ASARProblem(search.Problem):
         return True
         pass
         
-    def path_cost(self, c, state1, action, state2):
+    def path_cost( c, state1, action, state2):
+
+        if state1 is None:
+            c = c + 0
+        else:
+            c = c + 1/(action[1].profit[action[0].classe])
+        return c  
         pass
-        
-    def heuristic(self, node):
+
+    def heuristic(node):
         # note: use node.state to access the state
+        h = 0
+        return h
         pass
     
     def save(self, fh, state):
