@@ -164,12 +164,24 @@ class ASARProblem(search.Problem):
         return possible_actions
         pass
 
-    def result(self, state, action):
-        if s == None: #Initial state
-            #-----
-        else:
-            
-        pass
+    def result(state, action):
+        #if s == None:
+        #----
+        #else:
+        new_state = copy.deepcopy(state)
+
+        for plane in new_state.p_list:
+            print(plane.code)
+            if plane.__eq__(action[0]):
+                plane.pos = action[1].a_arr.code
+                plane.t_arr = action[0].t_avail + action[1].dl
+                plane.t_avail = plane.t_arr + plane.t_rot
+        for leg in new_state.l_list:
+            if leg.__eq__(action[1]):
+                leg.flight=[action[0].code, action[0].t_avail, leg.profit[action[0].classe]]
+
+    return new_state
+    pass
         
     def goal_test(self, state):
         pass
