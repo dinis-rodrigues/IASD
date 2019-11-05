@@ -164,7 +164,7 @@ class ASARProblem(search.Problem):
         return possible_actions
         pass
 
-    def result(state, action):
+    def result(self, state, action):
         if state is None :
             new_state = State(airplanes,legs)
             i=0
