@@ -5,6 +5,7 @@ import search
 def calculate_time(t):
     if t < 100:
         minutes = t
+        time_min = minutes
     else:
         hours = int(t*0.01)
         minutes = abs(t - hours*100)
