@@ -231,10 +231,7 @@ class ASARProblem(search.Problem):
     
     def save(self, fh, state):
         # note: fh is an opened file object
-        # for plane in self.airplanes:
-        #     if plane:
-        #         pass
-
+        
         # save into variable list of all the legs objects
         planes_list = state.p_list
         leg_list = state.l_list
