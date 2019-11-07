@@ -259,11 +259,18 @@ class ASARProblem(search.Problem):
             plane_leg_list.sort(key=lambda x : a[0] , reverse = False)
             # turn each value of list into a string
             plane_leg_list = [str(value) for value in plane_leg_list]
-            # add spaces for each value of the string
-            plane_leg_list = " ".join([value.strip() for value in plane_leg_list])
             # Start Pinrting 
             fh.write(plane.code + " ")
-            fh.writelines(plane_leg_list + '\n')
+
+            # plane_leg_list = [[time_dep, dep_airport, arr_airport], [time_dep, dep_airport, arr_airport] ... ]
+            # Loop for write all those values
+            for values in plane_leg_list:
+                # add spaces for each value of the string
+                values = " ".join([value.strip() for value in values])
+                # write [time_dep, dep_airport, arr_airport]
+                fh.writelines(values)
+            # add new line
+            fh.write('\n')
         # Write final line with total profit
         fh.write('S' + str(profit))
 
