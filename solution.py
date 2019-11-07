@@ -235,7 +235,40 @@ class ASARProblem(search.Problem):
         #     if plane:
         #         pass
 
-        pass
+        # save into variable list of all the legs objects
+        planes_list = state.p_list
+        leg_list = state.l_list
+        profit = 0
+
+        for plane in planes_list:
+            plane_leg_list = []
+            for leg in leg_list:
+                # check code of airplane
+                if leg.flight[0] == plane.code and leg.done == True:
+                    # load values from leg_list
+                    code_plane, time_dep, prof = leg.flight
+                    # save total profit 
+                    profit = profit + int(prof)
+                    # list to save printable data of this plane
+                    data = [time_dep, leg.a_dep, leg.a_arr]
+                    # data = [time_dep, dep_airport, arr_airport]
+                    plane_leg_list.append(data) # considering data = [...] and not [[...]] / else code change needed
+                else: pass
+            
+            # sort list of legs of the airplane by ascending order of tipe departure
+            plane_leg_list.sort(key=lambda x : a[0] , reverse = False)
+            # turn each value of list into a string
+            plane_leg_list = [str(value) for value in plane_leg_list]
+            # add spaces for each value of the string
+            plane_leg_list = " ".join([value.strip() for value in plane_leg_list])
+            # Start Pinrting 
+            fh.write(plane.code + " ")
+            fh.writelines(plane_leg_list + '\n')
+        # Write final line with total profit
+        fh.write('S' + str(profit))
+
+        fh.close()
+
         
     def load(self, fh):
         # note: fh is an opened file object
@@ -257,6 +290,11 @@ class ASARProblem(search.Problem):
         # Create and store objects from the information of lines in this loop
         for line in lines:
             words = line.split() # breaks down the line into words
+            
+            # remove any word that is a space
+            words = [x.strip(' ') for x in words]
+            words = [value for value in c if value != ""]
+
             # If the line is about the Airport
             if line[0] == 'A':
                 try:
