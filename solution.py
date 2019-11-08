@@ -1,6 +1,7 @@
 ### Template ###
 
 import search
+import copy
 
 def calculate_time(t):
     if t < 100:
@@ -130,7 +131,7 @@ class State():
 
     # Auxiliary Function
     def __members(self):
-        return (self.p_list, self.l_list)
+        return (tuple(self.p_list), tuple(self.l_list))
     
     # Checks the equality between two possible objects
     def __eq__(self, other):
@@ -156,45 +157,71 @@ class ASARProblem(search.Problem):
         
     
     def actions(self, s):
-        #s -> state
-        possible_actions = []
+        N=len(self.airports)
+        A=len(self.airplanes)
+    
+        if s is None:
+            a = [0]*A
 
-        for leg in s.l_list:
-            if not leg.done: #if the leg is not done
-                for plane in s.p_list:
-                    if plane.pos == 0: #if it's the initial state, create a list of all the initial actions
-                        pass
-                        # --------------------------------------
-                    elif (leg.a_dep.code == plane.pos) and (leg.a_arr.t_open <= (plane.t_avail + leg.dl) <= leg.a_arr.t_close) and (leg.a_dep.t_open <= plane.t_avail <= leg.a_dep.t_close):
-                        possible_actions.append([plane, leg])
-        return possible_actions
+            self.possible_actions=[] #define empty matrix 
+            for i in range(A): 
+                row=[] 
+                for k in range(N**A): 
+                    row.append(0) 
+                self.possible_actions.append(row) 
+            
+            
+            for k in range(1, N**A):
+                for i in range(A):
+                    if k % 4**i == 0:
+
+                        self.possible_actions[i][0]=self.airports[0].code
+                        
+                        if a[i] < N-1:
+                            a[i]=a[i]+1
+                        else:
+                            a[i]=0
+                    self.possible_actions[i][k]=self.airports[a[i]].code
+
+            #Transpose matrix to be used correctly by results
+            self.possible_actions = [[self.possible_actions[i][j] for i in range(len(self.possible_actions))] for j in range(len(self.possible_actions[0]))]
+
+        else:
+            self.possible_actions = []
+
+            for leg in s.l_list:
+                if not leg.done: #if the leg is not done
+                    for plane in s.p_list:
+                        if (leg.a_dep.code == plane.pos) and (leg.a_arr.t_open <= (plane.t_avail + leg.dl) <= leg.a_arr.t_close) and (leg.a_dep.t_open <= plane.t_avail <= leg.a_dep.t_close):
+                            self.possible_actions.append([plane, leg])
+        return self.possible_actions
         pass
 
     def result(self, state, action):
         if state is None :
-            new_state = State(airplanes,legs)
+            new_state = State(self.airplanes,self.legs)
             i=0
             for plane in new_state.p_list:
                 plane.pos = action[i]
                 plane.pos_init = action[i]
             
-                for airport in airports:
+                for airport in self.airports:
                     if airport.code == action[i]:
                         plane.t_avail = airport.t_open + plane.t_rot
                 i=i+1
         
-           else:
-                new_state = copy.deepcopy(state)
+        else:
+            new_state = copy.deepcopy(state)
 
-                for plane in new_state.p_list:
-                    if plane.__eq__(action[0]):
-                        plane.pos = action[1].a_arr.code
-                        plane.t_arr = action[0].t_avail + action[1].dl
-                        plane.t_avail = plane.t_arr + plane.t_rot
-                for leg in new_state.l_list:
-                    if leg.__eq__(action[1]):
-                        leg.flight=[action[0].code, action[0].t_avail, leg.profit[action[0].classe]]
-                        leg.done = True
+            for plane in new_state.p_list:
+                if plane.__eq__(action[0]):
+                    plane.pos = action[1].a_arr.code
+                    plane.t_arr = action[0].t_avail + action[1].dl
+                    plane.t_avail = plane.t_arr + plane.t_rot
+            for leg in new_state.l_list:
+                if leg.__eq__(action[1]):
+                    leg.flight=[action[0].code, action[0].t_avail, leg.profit[action[0].classe]]
+                    leg.done = True
 
         return new_state
         pass
@@ -225,13 +252,15 @@ class ASARProblem(search.Problem):
 
     def heuristic(self, node):
         # note: use node.state to access the state
-        h = 0
+        h = 1
         return h
         pass
     
     def save(self, fh, state):
         # note: fh is an opened file object
-        
+        if state is None:
+            fh.write("Unfeasible")
+            return 
         # save into variable list of all the legs objects
         planes_list = state.p_list
         leg_list = state.l_list
@@ -296,8 +325,8 @@ class ASARProblem(search.Problem):
             words = line.split() # breaks down the line into words
             
             # remove any word that is a space
-            words = [x.strip(' ') for x in words]
-            words = [value for value in c if value != ""]
+            #words = [x.strip(' ') for x in words]
+            #words = [value for value in words if value != ""]
 
             # If the line is about the Airport
             if line[0] == 'A':
@@ -313,11 +342,11 @@ class ASARProblem(search.Problem):
                 try:
                     a_dep, a_arr, dl = words[1:4]
                     # initialize a Leg object from the first 4 key informations
-                    for i in range(len(airports)):
-                        if airports[i].code == a_dep:
-                            air_dep=airports[i]
-                        if airports[i].code == a_arr:
-                            air_arr=airports[i]
+                    for i in range(len(self.airports)):
+                        if self.airports[i].code == a_dep:
+                            air_dep=self.airports[i]
+                        if self.airports[i].code == a_arr:
+                            air_arr=self.airports[i]
                     new_leg = Leg(air_dep, air_arr, calculate_time(int(dl)), profit={})
                     # The loop goes 2 by 2
                     for number in range(4, len(words), 2):
