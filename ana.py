@@ -190,7 +190,7 @@ class ASARProblem(search.Problem):
             i=0
             for leg in s.l_list:
                 if not leg.done: #if the leg is not done
-                    print(i)
+                    #print(i)
                     i=i+1
                     for plane in s.p_list:
                         # print('Plane: ',plane.code, 'Plane Pos: ',plane.pos)
@@ -255,31 +255,31 @@ class ASARProblem(search.Problem):
     def goal_test(self, state):
 
         if state is None:
-            print("goal state: False")
+            #print("goal state: False")
             return False
         else:
             for plane in state.p_list:
                 if plane.pos != plane.pos_init:
-                    print("goal: False")
+                    #print("goal: False")
                     return False
             for leg in state.l_list:
                 if leg.flight is None:
-                    print("goal: False")
+                    #print("goal: False")
                     return False
-        print("goal: True")
+        #print("goal: True")
         return True
         
         
     def path_cost(self, c, state1, action, state2):
 
-        print("pathcost calculated")
+        #print("pathcost calculated")
 
         if state1 is None:
             c = c + 0
         else:
             c = c + 1/(action[1].profit[action[0].classe])
         state2.p_cost = c
-        print("cost:", state2.p_cost)
+        #print("cost:", state2.p_cost)
         return c  
         
 
@@ -306,10 +306,20 @@ class ASARProblem(search.Problem):
                 if leg.flight[0] == plane.code and leg.done == True:
                     # load values from leg_list
                     code_plane, time_dep, prof = leg.flight
+
+                    # Get hours with floor division
+                    hours = int(time_dep) // 60
+                    if len(str(hours)) < 2:
+                        hours = '0'+str(hours)
+                    # Get additional minutes with modulus
+                    minutes = int(time_dep) % 60
+                    if len(str(minutes)) < 2:
+                        minutes = str(minutes) + '0'
+                    total_time = str(hours)+str(minutes)
                     # save total profit 
                     profit = profit + int(prof)
                     # list to save printable data of this plane
-                    data = [time_dep, leg.a_dep.code, leg.a_arr.code]
+                    data = [total_time, leg.a_dep.code, leg.a_arr.code]
                     # data = [time_dep, dep_airport, arr_airport]
                     plane_leg_list.append(data) # considering data = [...] and not [[...]] / else code change needed
                 else: pass
@@ -317,27 +327,23 @@ class ASARProblem(search.Problem):
             # sort list of legs of the airplane by ascending order of tipe departure
             plane_leg_list.sort(key=lambda x : x[0] , reverse = False)
             # turn each value of list into a string
-            plane_leg_list = [str(value) for value in plane_leg_list]
-            print(plane_leg_list)
-            print(plane.code)
+            
             # Start Pinrting 
-            fh.write(plane.code + " ")
-
-            # plane_leg_list = [[time_dep, dep_airport, arr_airport], [time_dep, dep_airport, arr_airport] ... ]
-            # Loop for write all those values
-            for values in plane_leg_list:
-                # add spaces for each value of the string
-                values = " ".join([value.strip() for value in values])
-                
-                print(values)
-                # write [time_dep, dep_airport, arr_airport]
-                fh.writelines(values)
+            for leg in leg_list:
+                if plane.code in leg.flight:
+                    fh.write('S ' + plane.code + " ")
+                    # plane_leg_list = [[time_dep, dep_airport, arr_airport], [time_dep, dep_airport, arr_airport] ... ]
+                    # Loop for write all those values
+                    for row in plane_leg_list:
+                        for element in row:
+                            fh.write(str(element) + ' ')
             # add new line
             fh.write('\n')
+            
         # Write final line with total profit
-        fh.write('S' + str(profit))
+        fh.write('P ' + str(profit))
 
-        fh.close()
+        
 
         
     def load(self, fh):
