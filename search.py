@@ -102,8 +102,10 @@ class Node:
 
     def expand(self, problem):
         """List the nodes reachable in one step from this node."""
-        return [self.child_node(problem, action)
+        this = [self.child_node(problem, action)
                 for action in problem.actions(self.state)]
+        axi=0
+        return this
 
     def child_node(self, problem, action):
         """[Figure 3.10]"""
@@ -264,19 +266,25 @@ def best_first_graph_search(problem, f):
     node = Node(problem.initial)
     frontier = PriorityQueue('min', f)
     frontier.append(node)
+    
     explored = set()
     while frontier:
+        # print('Node length',len(frontier))
         node = frontier.pop()
         if problem.goal_test(node.state):
             return node
         explored.add(node.state)
+        # print('###############################################################################3')
         for child in node.expand(problem):
+            # print('THIS IS MY CHILD ', child)
             if child.state not in explored and child not in frontier:
+                
                 frontier.append(child)
             elif child in frontier:
                 if f(child) < frontier[child]:
                     del frontier[child]
                     frontier.append(child)
+    # print('finished')
     return None
 
 
