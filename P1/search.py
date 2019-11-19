@@ -105,10 +105,12 @@ class Node:
         this = [self.child_node(problem, action)
                 for action in problem.actions(self.state)]
         axi=0
+        
         return this
 
     def child_node(self, problem, action):
         """[Figure 3.10]"""
+        
         next_state = problem.result(self.state, action)
         next_node = Node(next_state, self, action,
                          problem.path_cost(self.path_cost, self.state,
@@ -268,23 +270,25 @@ def best_first_graph_search(problem, f):
     frontier.append(node)
     
     explored = set()
+    n_depth = 0
     while frontier:
-        # print('Node length',len(frontier))
         node = frontier.pop()
+        n_depth = node.depth
         if problem.goal_test(node.state):
+            
             return node
         explored.add(node.state)
         # print('###############################################################################3')
         for child in node.expand(problem):
             # print('THIS IS MY CHILD ', child)
             if child.state not in explored and child not in frontier:
-                
                 frontier.append(child)
             elif child in frontier:
                 if f(child) < frontier[child]:
                     del frontier[child]
                     frontier.append(child)
     # print('finished')
+    print('Node depth',n_depth)
     return None
 
 

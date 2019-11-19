@@ -30,52 +30,52 @@ class Airplane():
         self.code = code
         self.t_arr = t_arr
         self.t_avail = t_avail
-        
+
     # By doing this, when we print the object, we get all the attributes printed
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
-    
+
     # Auxiliary Function
     def __members(self):
         return (self.code, self.classe, self.t_avail, self.t_arr, self.pos, self.t_rot, self.pos_init)
-    
+
     # Checks the equality between two possible objects
     def __eq__(self, other):
         if type(other) is type(self):
             return self.__members() == other.__members()
         else:
             return False
-        
+
     # Hashes the object
     def __hash__(self):
         return hash(self.__members())
-        
+
 class Airport():
 
     def __init__(self, t_open=None, t_close=None, code=None):
         self.t_open = t_open
         self.t_close = t_close
         self.code = code
-        
+
     # By doing this, when we print the object, we get all the attributes printed
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
-    
+
     # Auxiliary Function
     def __members(self):
         return (self.code, self.t_close)
-    
+
     # Checks the equality between two possible objects
     def __eq__(self, other):
         if type(other) is type(self):
             return self.__members() == other.__members()
         else:
             return False
-        
+
     # Hashes the object
     def __hash__(self):
         return hash(self.__members())
-    
+
 
 class Leg():
 
@@ -93,22 +93,22 @@ class Leg():
         self.profit = profit
         self.flight = flight
         self.done = done
-    
+
     # By doing this, when we print the object, we get all the attributes printed
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
-    
+
     # Auxiliary Function
     def __members(self):
         return (self.a_dep, self.dl, self.a_arr)
-    
+
     # Checks the equality between two possible objects
     def __eq__(self, other):
         if type(other) is type(self):
             return self.__members() == other.__members()
         else:
             return False
-        
+
     # Checks the equality between two possible objects
     def __hash__(self):
         return hash(self.__members())
@@ -117,6 +117,7 @@ class Leg():
 class State():
 
     def __init__(self, p_list=None, l_list=None, p_cost=0):
+        
         # p_list -> list of all airplanes
         # l_list -> list of all legs that need to be done
         # p_cost -> cost of the path taken so far
@@ -132,11 +133,11 @@ class State():
     # Auxiliary Function
     def __members(self):
         return (tuple(self.p_list), tuple(self.l_list))
-    
+
     # Checks the equality between two possible objects
     def __lt__(self, other):
         return self.p_cost > other.p_cost
-        
+
     # # Checks the equality between two possible objects
     # def __hash__(self):
     #     return hash(self.__members())
@@ -151,30 +152,32 @@ class ASARProblem(search.Problem):
         self.airports = []
         self.legs = []
         self.state_list = []
+        self.n_nodes = 0
+        self.n_legs = 0
         #self.possible_actions = []
-        
-    
+
+
     def actions(self, s):
         N=len(self.airports)
         A=len(self.airplanes)
-    
+
         if s is None:
             a = [0]*A
-        
-            possible_actions=[] #define empty matrix 
-            for i in range(A): 
-                row=[] 
-                for k in range(N**A): 
-                    row.append(0) 
-                possible_actions.append(row) 
-            
-            
+
+            possible_actions=[] #define empty matrix
+            for i in range(A):
+                row=[]
+                for k in range(N**A):
+                    row.append(0)
+                possible_actions.append(row)
+
+
             for k in range(1, N**A):
                 for i in range(A):
                     if k % 4**i == 0:
 
                         possible_actions[i][0]=self.airports[0].code
-                        
+
                         if a[i] < N-1:
                             a[i]=a[i]+1
                         else:
@@ -199,7 +202,7 @@ class ASARProblem(search.Problem):
                             # print('T_Open : ', leg.a_arr.t_open, 'P_ava + leg.dl: ',(plane.t_avail + leg.dl), 'T_close: ', leg.a_arr.t_close)
                             # print((leg.a_arr.t_open <= (plane.t_avail + leg.dl) <= leg.a_arr.t_close))
                             if (leg.a_arr.t_open <= (plane.t_avail + leg.dl) <= leg.a_arr.t_close):
-                                # print((leg.a_dep.t_open <= plane.t_avail <= leg.a_dep.t_close)) 
+                                # print((leg.a_dep.t_open <= plane.t_avail <= leg.a_dep.t_close))
                                 if (leg.a_dep.t_open <= plane.t_avail <= leg.a_dep.t_close):
                                     possible_actions.append([plane, leg])
                         #if (leg.a_dep.code == plane.pos) and (leg.a_arr.t_open <= (plane.t_avail + leg.dl) <= leg.a_arr.t_close) and (leg.a_dep.t_open <= plane.t_avail <= leg.a_dep.t_close):
@@ -207,10 +210,10 @@ class ASARProblem(search.Problem):
                             aix = 0
         aix=0
         return copy.deepcopy(possible_actions)
-        
+
 
     def result(self, state, action):
-        
+
         if state is None :
             # print("Is None  - action:", action)
             new_state = []
@@ -220,15 +223,16 @@ class ASARProblem(search.Problem):
                 plane.pos = action[i]
                 # print('plane_pos: ', action[i])
                 plane.pos_init = action[i]
-            
+
                 for airport in self.airports:
                     if airport.code == action[i]:
                         plane.t_avail = airport.t_open # + plane.t_rot
                 i=i+1
             #print("first state: ", plane.code, plane.pos)
+            self.n_nodes += 1
             self.state_list.append(new_state)
-            
-            
+
+
         else:
             new_state = []
             # print("action:", action[0].code , action[0].pos, action[1].a_dep.code, action[1].a_arr.code)
@@ -240,9 +244,9 @@ class ASARProblem(search.Problem):
                     plane.pos = action[1].a_arr.code
                     plane.t_arr = action[0].t_avail + action[1].dl
 
-                    print('Trip time: ', action[1].dl, 'Plane: ', plane.code, 'Trip + rotation: ')
+                    #print('Trip time: ', action[1].dl, 'Plane: ', plane.code, 'Trip + rotation: ')
                     plane.t_avail = plane.t_arr + plane.t_rot
-                    
+
                     # print("plane positions:", plane.code, "-", plane.pos)
             for leg in new_state.l_list:
                 if leg.__eq__(action[1]) and leg.done == False:
@@ -250,11 +254,12 @@ class ASARProblem(search.Problem):
                     leg.done = True
                   #  print("leg done:", leg.a_dep.code, leg.a_arr.code, action[0].code)
                     axi = 0
+            self.n_nodes += 1
             self.state_list.append(new_state)
         aix=0
         return new_state
-        
-        
+
+
     def goal_test(self, state):
 
         if state is None:
@@ -271,8 +276,8 @@ class ASARProblem(search.Problem):
                     return False
         #print("goal: True")
         return True
-        
-        
+
+
     def path_cost(self, c, state1, action, state2):
 
         #print("pathcost calculated")
@@ -283,8 +288,8 @@ class ASARProblem(search.Problem):
             c = c + 1/(action[1].profit[action[0].classe])
         state2.p_cost = c
         #print("cost:", state2.p_cost)
-        return c  
-        
+        return c
+
 
     def heuristic(self, node):
         # note: use node.state to access the state
@@ -299,16 +304,16 @@ class ASARProblem(search.Problem):
             if not leg.done:
                 h = h + 1
         h = h / (len(node.state.p_list) + len(node.state.l_list))
-        print(h)
+       
+        print('Heuristic: ', h, 'Path cost: ', node.state.p_cost)
         return h
-        pass
-        
-    
+
+
     def save(self, fh, state):
         # note: fh is an opened file object
         if state is None:
             fh.write("Unfeasible")
-            return 
+            return
         # save into variable list of all the legs objects
         planes_list = state.p_list
         leg_list = state.l_list
@@ -316,7 +321,7 @@ class ASARProblem(search.Problem):
         plane_solution_list = []
         for plane in planes_list:
             plane_leg_list = []
-            
+
             for leg in leg_list:
                 # check code of airplane
                 if leg.flight[0] == plane.code and leg.done == True:
@@ -336,22 +341,22 @@ class ASARProblem(search.Problem):
                     #print('prev min: ', minutes)
                     if len(str(minutes)) < 2:
                         minutes = '0' + str(minutes)
-                        print('minutes: ', minutes)
+                        #print('minutes: ', minutes)
                     total_time = str(hours)+str(minutes)
                     #print('total time: ', total_time)
-                    # save total profit 
+                    # save total profit
                     profit = profit + int(prof)
                     # list to save printable data of this plane
                     data = [total_time, leg.a_dep.code, leg.a_arr.code]
                     # data = [time_dep, dep_airport, arr_airport]
                     plane_leg_list.append(data) # considering data = [...] and not [[...]] / else code change needed
                 else: pass
-            
+
             # sort list of legs of the airplane by ascending order of tipe departure
             plane_leg_list.sort(key=lambda x : x[0] , reverse = False)
             # turn each value of list into a string
-            
-            # Start Pinrting 
+
+            # Start Pinrting
             #fh.write('S ' + plane.code + " ")
 
             # plane_leg_list = [[time_dep, dep_airport, arr_airport], [time_dep, dep_airport, arr_airport] ... ]
@@ -367,30 +372,34 @@ class ASARProblem(search.Problem):
         # Write final line with total profit
         fh.write('P ' + str(profit))
 
+
+
+
+    def load(self, fh):
+        """[summary]
+
+        Arguments:
+            fh {file} -- an opened file
+        """
         
 
-        
-    def load(self, fh):
-        # note: fh is an opened file object
-        # note: self.initial may also be initialized here
-        
         # Store Lines of file into a list variable lines = []
         lines=[]
-        for line in fh: 
+        for line in fh:
             if line == '\n':
                 pass
             else:
                 line = line.replace("\n", "")
                 lines.append(line)
-                
+
         # sort list to do airplanes first, then legs, then planes and finnaly classes
-        sort_order = ['A', 'L', 'P', 'C'] 
+        sort_order = ['A', 'L', 'P', 'C']
         lines = [tuple for x in sort_order for tuple in lines if tuple[0] == x]
-        
+
         # Create and store objects from the information of lines in this loop
         for line in lines:
             words = line.split() # breaks down the line into words
-            
+
             # remove any word that is a space
             #words = [x.strip(' ') for x in words]
             #words = [value for value in words if value != ""]
@@ -404,7 +413,7 @@ class ASARProblem(search.Problem):
                 except:
                     print("There's a line starting with 'A' that ins't properly defined")
 
-            # If the line is about the Leg                           
+            # If the line is about the Leg
             if line[0] == 'L':
                 try:
                     a_dep, a_arr, dl = words[1:4]
@@ -423,6 +432,7 @@ class ASARProblem(search.Problem):
                         new_leg.profit[classe] = int(profit)
                     # append the final object in the legs list
                     self.legs.append(new_leg)
+                    self.n_legs +=1
                     new_leg = None # empty the variable for safety reasons
                 except:
                     print("There's a line starting with 'L' that ins't properly defined")
@@ -436,7 +446,7 @@ class ASARProblem(search.Problem):
                     self.airplanes.append(Airplane(classe=classe, code=code))
                 except:
                     print("There's a line starting with 'P' that ins't properly defined")
-            
+
             # If the line is about the Clases
             if line[0] == 'C':
                 try:
