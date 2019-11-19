@@ -18,17 +18,28 @@ class Sensors:
         self.fpr = 0
         self.l = []
 
+
 class Measurements:
     def __init__(self):
         self.time_step = 0
         self.sensors = []
 
+        self.time = 0
+
+
 
 
 class Problem:
     def __init__(self, fh):
-    # Place here your code to load problem from opened file object fh
-    # and use probability.BayesNet() to create the Bayesian network
+        # definir lista para o BayesNet
+        # cpt = P(X | parents) = p, P(X = true| parents) = p -> probabilidade condicionada do quarto X estar on fire
+        # lista como input para bayesNet = [X, parents, cpt]
+        # parents = (R1, R2, ... Rn)
+        # X = R1
+
+        # Place here your code to load problem from opened file object fh
+        # and use probability.BayesNet() to create the Bayesian network
+        
         pass
     def solve(self):
     # Place here your code to determine the maximum likelihood solution
