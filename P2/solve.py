@@ -133,7 +133,7 @@ class Problem:
                 print("There's a line starting with 'P' that ins't properly defined")
 
         # If the line is about the Measurement
-        if line[0] == 'P':
+        if line[0] == 'M':
             try:
                 classe, dr = words[1:]
                 # check the class of each plane in our list
@@ -145,7 +145,7 @@ class Problem:
                     else:
                         pass
             except:
-                print("There's a line starting with 'C' that ins't properly defined")
+                print("There's a line starting with 'M' that ins't properly defined")
 
 
 
