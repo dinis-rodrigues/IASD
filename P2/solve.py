@@ -19,17 +19,20 @@ class Sensors:
         self.l = l
 
 class Measurements:
-    def __init__(self, time_step=0, sensors=[]):
+    def __init__(self, time_step=0, sensors=[], meas_value=None):
         self.time_step = time_step
         self.sensors = sensors
+        self.meas_value = meas_value
 
 class Problem:
     def __init__(self, fh):
-    # Place here your code to load problem from opened file object fh
-    # and use probability.BayesNet() to create the Bayesian network
+        # Place here your code to load problem from opened file object fh
+        # and use probability.BayesNet() to create the Bayesian network
         self.room_list = []
         self.sensor_list = []
-
+        self.propagation_prob = 0
+        self.time_step = -1
+        self.measurement_list = []
 
     def load(self, fh):
         # note: fh is an opened file object
@@ -50,7 +53,6 @@ class Problem:
 
         # Create and store objects from the information of lines in this loop
         for line in lines:
-            words = line.split()  # breaks down the line into words
 
             # remove any word that is a space
             # words = [x.strip(' ') for x in words]
@@ -59,8 +61,9 @@ class Problem:
             # If the line is about the Rooms
             if line[0] == 'R':
                 try:
+                    words = line.split()  # breaks down the line into words
                     # create and append a new room object into the room list
-                    for i in range(len(words)):
+                    for i in range(1,len(words)):
                         self.room_list.append(Rooms([], [], words[i], False, 0))
                 except:
                     print("There's a line starting with 'R' that ins't properly defined")
@@ -69,7 +72,7 @@ class Problem:
             if line[0] == 'C':
                 try:
                     tuple = line.split()
-                    for i in range(len(tuple)):
+                    for i in range(1,len(tuple)):
                         word = tuple[i].split(",")
                         for room in self.room_list:
                             if room.name == word[0]:
@@ -82,30 +85,46 @@ class Problem:
             # If the line is about the Sensors
             if line[0] == 'S':
                 try:
-
+                    tuple = line.split()
+                    for i in range(1, len(tuple)):
+                        word = tuple[i].split(":")
+                        print("words:", word)
+                        for room in room_list:
+                            if room.name == word[1]:
+                                room.sensors.append(word[0])
+                        sensor_list.append(Sensors(False, word[0], word[2], word[3], []))
                 except:
                     print("There's a line starting with 'S' that ins't properly defined")
 
             # If the line is about the propagation probability
             if line[0] == 'P':
                 try:
-
+                    word = line.split()
+                    self.propagation_prob = word[1]
                 except:
                     print("There's a line starting with 'P' that ins't properly defined")
 
             # If the line is about the Measurement
-            if line[0] == 'P':
+            if line[0] == 'M':
+                self.time_step = self.time_step + 1
                 try:
+                    tuple = line.split()
+                    for i in range(1,len(line)):
+                        word = tuple[i].split(":")
+                        if word[1] == "F":
+                            self.measurement_list.append(Measurements(self.time_step, word[0], False))
+                        if word[1] == "T":
+                            self.measurement_list.append(Measurements(self.time_step, word[0], True))
 
                 except:
-                    print("There's a line starting with 'C' that ins't properly defined")
-
+                    print("There's a line starting with 'M' that ins't properly defined")
 
     def solve(self):
-    # Place here your code to determine the maximum likelihood solution
-    # returning the solution room name and likelihood
-    # use probability.elimination_ask() to perform probabilistic inference
+        # Place here your code to determine the maximum likelihood solution
+        # returning the solution room name and likelihood
+        # use probability.elimination_ask() to perform probabilistic inference
         return (room, likelihood)
+
 def solver(input_file):
     return Problem(input_file).solve()
 
