@@ -11,7 +11,7 @@ class Rooms:
         self.time = time
 
 class Sensors:
-    def __init__(self, measure=False, name=0, tpr=0, fpr=0, l=[]):
+    def __init__(self, measure=False, name=None, tpr=0, fpr=0, l=[]):
         self.measure = measure
         self.name = name
         self.tpr = tpr
@@ -88,11 +88,11 @@ class Problem:
                     tuple = line.split()
                     for i in range(1, len(tuple)):
                         word = tuple[i].split(":")
-                        print("words:", word)
+
                         for room in room_list:
                             if room.name == word[1]:
                                 room.sensors.append(word[0])
-                        sensor_list.append(Sensors(False, word[0], word[2], word[3], []))
+                        sensor_list.append(Sensors(False, word[0], int(word[2]), int(word[3]), []))
                 except:
                     print("There's a line starting with 'S' that ins't properly defined")
 
