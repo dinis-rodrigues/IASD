@@ -92,7 +92,7 @@ class Problem:
                         for room in room_list:
                             if room.name == word[1]:
                                 room.sensors.append(word[0])
-                        sensor_list.append(Sensors(False, word[0], int(word[2]), int(word[3]), []))
+                        sensor_list.append(Sensors(False, word[0], float(word[2]), float(word[3]), []))
                 except:
                     print("There's a line starting with 'S' that ins't properly defined")
 
