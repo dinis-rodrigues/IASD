@@ -31,7 +31,7 @@ class Problem:
         self.room_list = []
         self.sensor_list = []
         self.propagation_prob = 0
-        self.time_step = -1
+        self.time_step = 0
         self.measurement_list = []
 
     def load(self, fh):
@@ -119,17 +119,24 @@ class Problem:
                 except:
                     print("There's a line starting with 'M' that ins't properly defined")
 
-    def solve(self):
-        # Place here your code to determine the maximum likelihood solution
-        # returning the solution room name and likelihood
-        # use probability.elimination_ask() to perform probabilistic inference
+    def solve():
+        meas_dict = {}
+        for i in range(1, 5):
+            for meas in measurement_list:
+                for sensor in sensor_list:
+                    if meas.time_step == i and meas.sensors == sensor.name:
+                        m = meas.meas_value
+                        meas_dict.update({sensor.name + "_" + str(i): m})
+
+        for room in self.room_list:
+            elimination_ask(room.name + str(self.time_step), meas_dict, museum).show_approx()
+
         return (room, likelihood)
+
+
 
 def solver(input_file):
     return Problem(input_file).solve()
-
-
-
 
 class BayesNet:
     """Bayesian network containing only boolean-variable nodes."""
@@ -176,6 +183,52 @@ The algorithm creates factors out of Bayes Nodes in reverse order and eliminates
 
 P(Burglary=True | JohnCalls=True, MaryCalls=True) using variable elimination.
 """
+class BayesNode:
+    """A conditional probability distribution for a boolean variable,
+    P(X | parents). Part of a BayesNet."""
+
+    def __init__(self, X, parents, cpt):
+        """X is a variable name, and parents a sequence of variable
+        names or a space-separated string.  cpt, the conditional
+        probability table, takes one of these forms:
+        * A number, the unconditional probability P(X=true). You can
+          use this form when there are no parents.
+        * A dict {v: p, ...}, the conditional probability distribution
+          P(X=true | parent=v) = p. When there's just one parent.
+        * A dict {(v1, v2, ...): p, ...}, the distribution P(X=true |
+          parent1=v1, parent2=v2, ...) = p. Each key must have as many
+          values as there are parents. You can use this form always;
+          the first two are just conveniences.
+        In all cases the probability of X being false is left implicit,
+        since it follows from P(X=true).
+        >>> X = BayesNode('X', '', 0.2)
+        >>> Y = BayesNode('Y', 'P', {T: 0.2, F: 0.7})
+        >>> Z = BayesNode('Z', 'P Q',
+        ...    {(T, T): 0.2, (T, F): 0.3, (F, T): 0.5, (F, F): 0.7})
+        """
+        if isinstance(parents, str):
+            parents = parents.split()
+
+        # We store the table always in the third form above.
+        if isinstance(cpt, (float, int)):  # no parents, 0-tuple
+            cpt = {(): cpt}
+        elif isinstance(cpt, dict):
+            # one parent, 1-tuple
+            if cpt and isinstance(list(cpt.keys())[0], bool):
+                cpt = {(v,): p for v, p in cpt.items()}
+
+        assert isinstance(cpt, dict)
+        for vs, p in cpt.items():
+            assert isinstance(vs, tuple) and len(vs) == len(parents)
+            assert all(isinstance(v, bool) for v in vs)
+            assert 0 <= p <= 1
+
+        self.variable = X
+        self.parents = parents
+        self.cpt = cpt
+        self.children = []
+
+
 
 def elimination_ask(X, e, bn):
     """
@@ -191,3 +244,5 @@ def elimination_ask(X, e, bn):
         if is_hidden(var, X, e):
             factors = sum_out(var, factors, bn)
     return pointwise_product(factors, bn).normalize()
+
+
