@@ -1,14 +1,16 @@
-
-#import probability
+from probability import BayesNet, BayesNode, elimination_ask
+import itertools
+import time
 
 
 class Rooms:
-    def __init__(self, neighbours=[], sensors=[], name=None, on_fire=False, time=0):
+    def __init__(self, neighbours=[], sensors=None, name=None, on_fire=False, time=0):
         self.neighbours = neighbours
-        self.sensors = sensors
+        self.sensor = sensors
         self.name = name
         self.on_fire = on_fire
         self.time = time
+        self.bayes = []
 
 class Sensors:
     def __init__(self, measure=False, name=None, tpr=0, fpr=0, l=[]):
@@ -31,8 +33,96 @@ class Problem:
         self.room_list = []
         self.sensor_list = []
         self.propagation_prob = 0
-        self.time_step = -1
+        self.time_step = 0
         self.measurement_list = []
+        self.loaded = self.load(fh)
+        self.bayes = self.create()
+        self.p_dict = {}
+
+
+    def solve(self):
+        # Build Evidence of measurements for elimination_ask = ev_dict
+        ev_dict={} # for the elimination ask
+        for m in self.measurement_list:
+            s_name = m.sensors + '_' + str(m.time_step)
+            ev_dict[s_name] = m.meas_value
+
+        # Get likelihood for each room and store value in dictionary
+        for room in self.room_list:
+            r_name = room.name + '_' + str(self.time_step)
+            # get likelihood of room being on fire = True
+            likelihood = elimination_ask(r_name, ev_dict, self.bayes)[True]
+            # Save values
+            self.p_dict[r_name] = likelihood
+        # Get max value
+        room_name = max(self.p_dict, key=self.p_dict.get)
+        max_likelihood = self.p_dict[room_name]
+        return (room_name, max_likelihood)
+
+    def create(self):
+        baye = []
+        for step in range(self.time_step+1):
+            for room in self.room_list:
+                # Create parents at t=0
+                if step == 0:
+                    baye.append((room.name + '_' + str(step), '', 0.5))
+                else:
+                    # Start building the child nodes
+                    parent = None
+                    parent = room.name + '_' + str(step-1)
+                    # Add parents of current node
+                    for neighboor in room.neighbours:
+                        parent = parent + ' ' + neighboor + '_' + str(step-1)
+                    
+                    # Append to list, a tuple witt all the info of the current node
+                    r_name = room.name + '_' + str(step)
+                    baye.append((r_name, parent, self.get_prob(room = room)))
+                    # Do sensors now
+                    if room.sensor:
+                        s_name = room.sensor.name+'_'+str(step)
+                        r_name = room.name + '_' + str(step)
+                        baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
+                    # if step == self.time_step:
+                    #     parent = None
+                    #     parent = room.name + '_' + str(step)
+                    #     for neighboor in room.neighbours:
+                    #         parent = parent + ' ' + neighboor + '_' + str(step)
+
+                    #     r_name = room.name + '_' + str(step+1)
+                    #     baye.append((r_name, parent, self.get_prob(room = room)))
+                    
+        print(baye)
+        return BayesNet(baye)
+
+    # Makes a binary table and creates a dictionary with the corresponding probability values
+    def get_prob(self, room=[],sensor=[]):
+        # start dictionary
+        prob_dict = {}
+        # If input is a room
+        if room:
+            # length of neighbours is always +1 because we need to count with itself as well
+            num = len(room.neighbours)+1
+            # generate binary list
+            bin_table = list(itertools.product([False, True], repeat=num))
+            for row in bin_table:
+                # Check if they are all 'False'
+                if all(item == False for item in row):
+                    prob_dict[row] = 0
+                # Check if they are all 'True'
+                elif all(item == True for item in row):
+                    prob_dict[row] = 1
+                # if first element is 'False', it's now assured that there's at least a 'True' after
+                elif row[0] == False:
+                    prob_dict[row] = self.propagation_prob
+                # if first element is 'True', it's now assured that there's at least a 'False' after
+                elif row[0] == True:
+                    prob_dict[row] = 1
+        # If input is a sensor
+        else:
+            prob_dict[False] = sensor.fpr
+            prob_dict[True] = sensor.tpr
+        return prob_dict
+
 
     def load(self, fh):
         # note: fh is an opened file object
@@ -64,7 +154,7 @@ class Problem:
                     words = line.split()  # breaks down the line into words
                     # create and append a new room object into the room list
                     for i in range(1,len(words)):
-                        self.room_list.append(Rooms([], [], words[i], False, 0))
+                        self.room_list.append(Rooms([], None, words[i], False, 0))
                 except:
                     print("There's a line starting with 'R' that ins't properly defined")
 
@@ -88,11 +178,12 @@ class Problem:
                     tuple = line.split()
                     for i in range(1, len(tuple)):
                         word = tuple[i].split(":")
-
-                        for room in room_list:
+                        # Modified this to add sensor object in room as well, instead of only the name
+                        sens = Sensors(False, word[0], float(word[2]), float(word[3]), [])
+                        for room in self.room_list:
                             if room.name == word[1]:
-                                room.sensors.append(word[0])
-                        sensor_list.append(Sensors(False, word[0], float(word[2]), float(word[3]), []))
+                                room.sensor = sens
+                        self.sensor_list.append(sens)
                 except:
                     print("There's a line starting with 'S' that ins't properly defined")
 
@@ -100,7 +191,7 @@ class Problem:
             if line[0] == 'P':
                 try:
                     word = line.split()
-                    self.propagation_prob = word[1]
+                    self.propagation_prob = float(word[1])
                 except:
                     print("There's a line starting with 'P' that ins't properly defined")
 
@@ -109,7 +200,7 @@ class Problem:
                 self.time_step = self.time_step + 1
                 try:
                     tuple = line.split()
-                    for i in range(1,len(line)):
+                    for i in range(1,len(tuple)):
                         word = tuple[i].split(":")
                         if word[1] == "F":
                             self.measurement_list.append(Measurements(self.time_step, word[0], False))
@@ -118,76 +209,20 @@ class Problem:
 
                 except:
                     print("There's a line starting with 'M' that ins't properly defined")
+        return True
 
-    def solve(self):
-        # Place here your code to determine the maximum likelihood solution
-        # returning the solution room name and likelihood
-        # use probability.elimination_ask() to perform probabilistic inference
-        return (room, likelihood)
+def solver(fh):
+        return Problem(fh).solve()
 
-def solver(input_file):
-    return Problem(input_file).solve()
-
-
-
-
-class BayesNet:
-    """Bayesian network containing only boolean-variable nodes."""
-
-    def __init__(self, node_specs=None):
-        """Nodes must be ordered with parents before children."""
-        self.nodes = []
-        self.variables = []
-        node_specs = node_specs or []
-        for node_spec in node_specs:
-            self.add(node_spec)
-
-    def add(self, node_spec):
-        """Add a node to the net. Its parents must already be in the
-        net, and its variable must not."""
-        node = BayesNode(*node_spec)
-        assert node.variable not in self.variables
-        assert all((parent in self.variables) for parent in node.parents)
-        self.nodes.append(node)
-        self.variables.append(node.variable)
-        for parent in node.parents:
-            self.variable_node(parent).children.append(node)
-
-    def variable_node(self, var):
-        """Return the node for the variable named var.
-        >>> burglary.variable_node('Burglary').variable
-        'Burglary'"""
-        for n in self.nodes:
-            if n.variable == var:
-                return n
-        raise Exception("No such variable: {}".format(var))
-
-    def variable_values(self, var):
-        """Return the domain of var."""
-        return [True, False]
-
-    def __repr__(self):
-        return 'BayesNet({0!r})'.format(self.nodes)
-
-"""
-The algorithm described in Figure 14.11 of the book is implemented by the function elimination_ask. We use this for inference. The key idea is that we eliminate the hidden variables by interleaving joining and marginalization. It takes in 3 arguments X the query variable, e the evidence variable and bn the Bayes network.
-
-The algorithm creates factors out of Bayes Nodes in reverse order and eliminates hidden variables using sum_out. Finally it takes a point wise product of all factors and normalizes. Let us finally solve the problem of inferring
-
-P(Burglary=True | JohnCalls=True, MaryCalls=True) using variable elimination.
-"""
-
-def elimination_ask(X, e, bn):
-    """
-    [Figure 14.11]
-    Compute bn's P(X|e) by variable elimination.
-    >>> elimination_ask('Burglary', dict(JohnCalls=T, MaryCalls=T), burglary
-    ...  ).show_approx()
-    'False: 0.716, True: 0.284'"""
-    assert X not in e, "Query variable must be distinct from evidence"
-    factors = []
-    for var in reversed(bn.variables):
-        factors.append(make_factor(var, e, bn))
-        if is_hidden(var, X, e):
-            factors = sum_out(var, factors, bn)
-    return pointwise_product(factors, bn).normalize()
+# Time for execution time
+start_time = time.time()
+# Open file
+fh = open('tests/P1.txt', 'r+')
+# Solve and print solution
+print('\n Solution -> ', solver(fh))
+# Close file
+fh.close()
+# Get execution time
+print("--- %s seconds ---" % (time.time() - start_time))
+# Aux for debug
+a = 0
