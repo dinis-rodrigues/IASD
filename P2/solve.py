@@ -225,4 +225,4 @@ fh.close()
 # Get execution time
 print("--- %s seconds ---" % (time.time() - start_time))
 # Aux for debug
-a = 0
+aux = 0
