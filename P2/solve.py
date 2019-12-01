@@ -89,9 +89,11 @@ class Problem:
                     baye.append((r_name, parent, self.get_prob(room = room)))
                     # Add respective sensors of the room if any
                     if room.sensor:
-                        s_name = room.sensor.name+'_'+str(step)
-                        r_name = room.name + '_' + str(step)
-                        baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
+                        for measurement in self.measurement_list:
+                           if measurement.time_step == step and room.sensor.name in measurement.sensors:
+                                s_name = room.sensor.name+'_'+str(step)
+                                r_name = room.name + '_' + str(step)
+                                baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
                     # if step == self.time_step:
                     #     parent = None
                     #     parent = room.name + '_' + str(step)
