@@ -1,6 +1,6 @@
 from probability import BayesNet, BayesNode, elimination_ask
 import itertools
-import time
+
 
 
 class Rooms:
@@ -62,7 +62,7 @@ class Problem:
         room_name = room_name[:rem]
         
         return (room_name, max_likelihood)
-
+    ## Alterei os steps no len abaixo e em cima também para ter o ultimo room
     def create(self):
         baye = []
         # Step in this case goes only until T-1
@@ -100,8 +100,8 @@ class Problem:
 
                     #     r_name = room.name + '_' + str(step+1)
                     #     baye.append((r_name, parent, self.get_prob(room = room)))
-        # Uncomment to see bayes net
-        #print(baye)
+                    
+        print(baye)
         return BayesNet(baye)
 
     # Makes a binary table and creates a dictionary with the corresponding probability values
@@ -117,7 +117,7 @@ class Problem:
             for row in bin_table:
                 # Check if they are all 'False'
                 if all(item == False for item in row):
-                    prob_dict[row] = 0
+                    prob_dict[row] = self.propagation_prob
                 # Check if they are all 'True'
                 elif all(item == True for item in row):
                     prob_dict[row] = 1
@@ -224,49 +224,3 @@ class Problem:
 
 def solver(fh):
         return Problem(fh).solve()
-
-
-# Time for execution time
-start_time = time.time()
-# Open file
-file = 'tests/P4.txt'
-fh = open(file, 'r+')
-# Solve and print solution
-solution = solver(fh)
-print('\n Our Solution -> ', solution)
-# Close file
-fh.close()
-# Check difference with the given solution
-print('\n ------ Difference in the solution ------')
-if file == 'tests/P1.txt':
-    if solution[0] == 'Greece_Parthenon':
-        print('Is the room equal ? -> True')
-    else:
-        print('Is the room equal ? -> False', '\n')
-    print('Likelihood difference -> ', solution[1]-0.5)
-
-elif file == 'tests/P2.txt':
-    if solution[0] == 'Japan':
-        print('Is the room equal ? -> True')
-    else:
-        print('Is the room equal ? -> False', '\n')
-    print('Likelihood difference -> ', solution[1]-0.9933685515030102)
-elif file == 'tests/P3.txt':
-    if solution[0] == 'North_America':
-        print('Is the room equal ? -> True')
-    else:
-        print('Is the room equal ? -> False', '\n')
-    print('Likelihood difference -> ', solution[1]-0.05863045770513284)
-elif file == 'tests/P4.txt':
-    if solution[0] == 'Egyptian_life_and_death_the_tomb-chapel_of_Nebamun':
-        print('Is the room equal ? -> True')
-    else:
-        print('Is the room equal ? -> False', '\n')
-    print('Likelihood difference -> ', solution[1]-0.984291039975714)
-
-print('\n --------- Execution Time --------------')
-
-# Get execution time
-print("--- %s seconds ---" % (time.time() - start_time))
-# Aux for debug
-aux = 0

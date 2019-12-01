@@ -13,12 +13,12 @@ class Rooms:
         self.bayes = []
 
 class Sensors:
-    def __init__(self, measure=False, name=None, tpr=0, fpr=0, l=[]):
+    def __init__(self, measure=False, name=None, tpr=0, fpr=0, time=[]):
         self.measure = measure
         self.name = name
         self.tpr = tpr
         self.fpr = fpr
-        self.l = l
+        self.time = time
 
 class Measurements:
     def __init__(self, time_step=0, sensors=[], meas_value=None):
@@ -44,12 +44,12 @@ class Problem:
         # Build Evidence of measurements for elimination_ask = ev_dict
         ev_dict={} # for the elimination ask
         for m in self.measurement_list:
-            s_name = m.sensors + '_' + str(m.time_step-1)
+            s_name = m.sensors + '_' + str(m.time_step)
             ev_dict[s_name] = m.meas_value
 
         # Get likelihood for each room and store value in dictionary
         for room in self.room_list:
-            r_name = room.name + '_' + str(self.time_step-1)
+            r_name = room.name + '_' + str(self.time_step)
             # get likelihood of room being on fire = True
             likelihood = elimination_ask(r_name, ev_dict, self.bayes)[True]
             # Save values
@@ -57,41 +57,35 @@ class Problem:
         # Get max value
         room_name = max(self.p_dict, key=self.p_dict.get)
         max_likelihood = self.p_dict[room_name]
-
-        rem = -(len(str(self.time_step))+1)
-        room_name = room_name[:rem]
-        
         return (room_name, max_likelihood)
 
     def create(self):
         baye = []
-        # Step in this case goes only until T-1
-        for step in range(self.time_step):
+        for step in range(self.time_step+1):
             for room in self.room_list:
                 # Create parents at t=0
                 if step == 0:
-                    # Add initial probability
                     baye.append((room.name + '_' + str(step), '', 0.5))
-                    # Add respective sensors if any
                     if room.sensor:
                         s_name = room.sensor.name+'_'+str(step)
                         r_name = room.name + '_' + str(step)
                         baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
-                else:
+                elif step != self.time_step and step != 0:
                     # Start building the child nodes
                     parent = None
-                    # Add parents of current node
                     parent = room.name + '_' + str(step-1)
+                    # Add parents of current node
                     for neighboor in room.neighbours:
                         parent = parent + ' ' + neighboor + '_' + str(step-1)
                     # Append to list, a tuple witt all the info of the current node
                     r_name = room.name + '_' + str(step)
                     baye.append((r_name, parent, self.get_prob(room = room)))
-                    # Add respective sensors of the room if any
-                    if room.sensor:
+                    # Do sensors now
+                    if room.sensor:#and any(item == step for item in room.sensor.time):
                         s_name = room.sensor.name+'_'+str(step)
                         r_name = room.name + '_' + str(step)
                         baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
+
                     # if step == self.time_step:
                     #     parent = None
                     #     parent = room.name + '_' + str(step)
@@ -100,8 +94,15 @@ class Problem:
 
                     #     r_name = room.name + '_' + str(step+1)
                     #     baye.append((r_name, parent, self.get_prob(room = room)))
-        # Uncomment to see bayes net
-        #print(baye)
+                else:
+                    parent = None
+                    parent = room.name + '_' + str(step-1)
+                    for neighboor in room.neighbours:
+                        parent = parent + ' ' + neighboor + '_' + str(step-1)
+                    # Append to list, a tuple witt all the info of the current node
+                    r_name = room.name + '_' + str(step)
+                    baye.append((r_name, parent, self.get_prob(room = room)))
+        print(baye)
         return BayesNet(baye)
 
     # Makes a binary table and creates a dictionary with the corresponding probability values
@@ -117,7 +118,7 @@ class Problem:
             for row in bin_table:
                 # Check if they are all 'False'
                 if all(item == False for item in row):
-                    prob_dict[row] = 0
+                    prob_dict[row] = 0.5
                 # Check if they are all 'True'
                 elif all(item == True for item in row):
                     prob_dict[row] = 1
@@ -216,7 +217,9 @@ class Problem:
                             self.measurement_list.append(Measurements(self.time_step, word[0], False))
                         if word[1] == "T":
                             self.measurement_list.append(Measurements(self.time_step, word[0], True))
-
+                        for sensor in self.sensor_list:
+                            if word[0] == sensor.name:
+                                sensor.time.append(self.time_step)
 
                 except:
                     print("There's a line starting with 'M' that ins't properly defined")
@@ -225,47 +228,14 @@ class Problem:
 def solver(fh):
         return Problem(fh).solve()
 
-
 # Time for execution time
 start_time = time.time()
 # Open file
-file = 'tests/P4.txt'
-fh = open(file, 'r+')
+fh = open('tests/P1.txt', 'r+')
 # Solve and print solution
-solution = solver(fh)
-print('\n Our Solution -> ', solution)
+print('\n Solution -> ', solver(fh))
 # Close file
 fh.close()
-# Check difference with the given solution
-print('\n ------ Difference in the solution ------')
-if file == 'tests/P1.txt':
-    if solution[0] == 'Greece_Parthenon':
-        print('Is the room equal ? -> True')
-    else:
-        print('Is the room equal ? -> False', '\n')
-    print('Likelihood difference -> ', solution[1]-0.5)
-
-elif file == 'tests/P2.txt':
-    if solution[0] == 'Japan':
-        print('Is the room equal ? -> True')
-    else:
-        print('Is the room equal ? -> False', '\n')
-    print('Likelihood difference -> ', solution[1]-0.9933685515030102)
-elif file == 'tests/P3.txt':
-    if solution[0] == 'North_America':
-        print('Is the room equal ? -> True')
-    else:
-        print('Is the room equal ? -> False', '\n')
-    print('Likelihood difference -> ', solution[1]-0.05863045770513284)
-elif file == 'tests/P4.txt':
-    if solution[0] == 'Egyptian_life_and_death_the_tomb-chapel_of_Nebamun':
-        print('Is the room equal ? -> True')
-    else:
-        print('Is the room equal ? -> False', '\n')
-    print('Likelihood difference -> ', solution[1]-0.984291039975714)
-
-print('\n --------- Execution Time --------------')
-
 # Get execution time
 print("--- %s seconds ---" % (time.time() - start_time))
 # Aux for debug
