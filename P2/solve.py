@@ -88,24 +88,18 @@ class Problem:
                     r_name = room.name + '_' + str(step)
                     baye.append((r_name, parent, self.get_prob(room = room)))
                     # Add respective sensors of the room if any
+                    # COMMENT THIS AND UNCOMMENT BELOW IF YOU WANT... (READ BELOW)
                     if room.sensor:
                         s_name = room.sensor.name+'_'+str(step)
                         r_name = room.name + '_' + str(step)
                         baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
+                    # UNCOMMENT THIS PART IF YOU ONLY WANT TO ADD SENSOR ONLY AT THE RESPECTIVE MEASURE TIME
                     # if room.sensor:
                     #     for measurement in self.measurement_list:
                     #        if measurement.time_step-1 == step and room.sensor.name in measurement.sensors:
                     #             s_name = room.sensor.name+'_'+str(step)
                     #             r_name = room.name + '_' + str(step)
                     #             baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
-                    # if step == self.time_step:
-                    #     parent = None
-                    #     parent = room.name + '_' + str(step)
-                    #     for neighboor in room.neighbours:
-                    #         parent = parent + ' ' + neighboor + '_' + str(step)
-
-                    #     r_name = room.name + '_' + str(step+1)
-                    #     baye.append((r_name, parent, self.get_prob(room = room)))
         # Uncomment to see bayes net
         #print(baye)
         return BayesNet(baye)
