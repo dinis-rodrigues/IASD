@@ -1,8 +1,6 @@
 from probability import BayesNet, BayesNode, elimination_ask
 import itertools
 
-
-
 class Rooms:
     def __init__(self, neighbours=[], sensors=None, name=None, on_fire=False, time=0):
         self.neighbours = neighbours
@@ -62,7 +60,7 @@ class Problem:
         room_name = room_name[:rem]
         
         return (room_name, max_likelihood)
-    ## Alterei os steps no len abaixo e em cima também para ter o ultimo room
+
     def create(self):
         baye = []
         # Step in this case goes only until T-1
@@ -92,6 +90,12 @@ class Problem:
                         s_name = room.sensor.name+'_'+str(step)
                         r_name = room.name + '_' + str(step)
                         baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
+                    # if room.sensor:
+                    #     for measurement in self.measurement_list:
+                    #        if measurement.time_step-1 == step and room.sensor.name in measurement.sensors:
+                    #             s_name = room.sensor.name+'_'+str(step)
+                    #             r_name = room.name + '_' + str(step)
+                    #             baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
                     # if step == self.time_step:
                     #     parent = None
                     #     parent = room.name + '_' + str(step)
@@ -100,8 +104,8 @@ class Problem:
 
                     #     r_name = room.name + '_' + str(step+1)
                     #     baye.append((r_name, parent, self.get_prob(room = room)))
-                    
-        print(baye)
+        # Uncomment to see bayes net
+        #print(baye)
         return BayesNet(baye)
 
     # Makes a binary table and creates a dictionary with the corresponding probability values
@@ -117,7 +121,7 @@ class Problem:
             for row in bin_table:
                 # Check if they are all 'False'
                 if all(item == False for item in row):
-                    prob_dict[row] = self.propagation_prob
+                    prob_dict[row] = 0
                 # Check if they are all 'True'
                 elif all(item == True for item in row):
                     prob_dict[row] = 1

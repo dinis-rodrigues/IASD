@@ -89,11 +89,15 @@ class Problem:
                     baye.append((r_name, parent, self.get_prob(room = room)))
                     # Add respective sensors of the room if any
                     if room.sensor:
-                        for measurement in self.measurement_list:
-                           if measurement.time_step == step and room.sensor.name in measurement.sensors:
-                                s_name = room.sensor.name+'_'+str(step)
-                                r_name = room.name + '_' + str(step)
-                                baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
+                        s_name = room.sensor.name+'_'+str(step)
+                        r_name = room.name + '_' + str(step)
+                        baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
+                    # if room.sensor:
+                    #     for measurement in self.measurement_list:
+                    #        if measurement.time_step-1 == step and room.sensor.name in measurement.sensors:
+                    #             s_name = room.sensor.name+'_'+str(step)
+                    #             r_name = room.name + '_' + str(step)
+                    #             baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
                     # if step == self.time_step:
                     #     parent = None
                     #     parent = room.name + '_' + str(step)
@@ -231,7 +235,7 @@ def solver(fh):
 # Time for execution time
 start_time = time.time()
 # Open file
-file = 'tests/P4.txt'
+file = 'tests/P3.txt'
 fh = open(file, 'r+')
 # Solve and print solution
 solution = solver(fh)
