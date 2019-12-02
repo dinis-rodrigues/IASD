@@ -232,10 +232,14 @@ def solver(fh):
         return Problem(fh).solve()
 
 
+#####################################################################################
+# PART FOR TESTING THE SOLUTION
+#####################################################################################
+
 # Time for execution time
 start_time = time.time()
 # Open file
-file = 'tests/P3.txt'
+file = 'tests/P1.txt'
 fh = open(file, 'r+')
 # Solve and print solution
 solution = solver(fh)
@@ -250,7 +254,6 @@ if file == 'tests/P1.txt':
     else:
         print('Is the room equal ? -> False', '\n')
     print('Likelihood difference -> ', solution[1]-0.5)
-
 elif file == 'tests/P2.txt':
     if solution[0] == 'Japan':
         print('Is the room equal ? -> True')
