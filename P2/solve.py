@@ -4,7 +4,7 @@ import time
 
 
 class Rooms:
-    def __init__(self, neighbours=[], sensors=None, name=None, on_fire=False, time=0):
+    def __init__(self, neighbours=[], sensors=[], name=None, on_fire=False, time=0):
         self.neighbours = neighbours
         self.sensor = sensors
         self.name = name
@@ -74,25 +74,31 @@ class Problem:
                     baye.append((room.name + '_' + str(step), '', 0.5))
                     # Add respective sensors if any
                     if room.sensor:
-                        s_name = room.sensor.name+'_'+str(step)
-                        r_name = room.name + '_' + str(step)
-                        baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
+                        for s in room.sensor:
+                            s_name = s.name+'_'+str(step)
+                            r_name = room.name + '_' + str(step)
+                            baye.append((s_name, r_name, self.get_prob(sensor = s)))
                 else:
                     # Start building the child nodes
                     parent = None
+                    ax = 1
                     # Add parents of current node
                     parent = room.name + '_' + str(step-1)
                     for neighboor in room.neighbours:
                         parent = parent + ' ' + neighboor + '_' + str(step-1)
+                        ax += 1
                     # Append to list, a tuple witt all the info of the current node
+                    print(room.name, 'has -> ', ax, 'parents')
                     r_name = room.name + '_' + str(step)
                     baye.append((r_name, parent, self.get_prob(room = room)))
                     # Add respective sensors of the room if any
                     # COMMENT THIS AND UNCOMMENT BELOW IF YOU WANT... (READ BELOW)
                     if room.sensor:
-                        s_name = room.sensor.name+'_'+str(step)
-                        r_name = room.name + '_' + str(step)
-                        baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
+                        for s in room.sensor:
+                            print('And a sensor number -> ', s.name)
+                            s_name = s.name+'_'+str(step)
+                            r_name = room.name + '_' + str(step)
+                            baye.append((s_name, r_name, self.get_prob(sensor = s)))
                     # UNCOMMENT THIS PART IF YOU ONLY WANT TO ADD SENSOR ONLY AT THE RESPECTIVE MEASURE TIME
                     # if room.sensor:
                     #     for measurement in self.measurement_list:
@@ -164,7 +170,7 @@ class Problem:
                     words = line.split()  # breaks down the line into words
                     # create and append a new room object into the room list
                     for i in range(1,len(words)):
-                        self.room_list.append(Rooms([], None, words[i], False, 0))
+                        self.room_list.append(Rooms([], [], words[i], False, 0))
                 except:
                     print("There's a line starting with 'R' that ins't properly defined")
 
@@ -192,7 +198,7 @@ class Problem:
                         sens = Sensors(False, word[0], float(word[2]), float(word[3]), [])
                         for room in self.room_list:
                             if room.name == word[1]:
-                                room.sensor = sens
+                                room.sensor.append(sens)# = sens
                         self.sensor_list.append(sens)
                 except:
                     print("There's a line starting with 'S' that ins't properly defined")
@@ -233,7 +239,7 @@ def solver(fh):
 # Time for execution time
 start_time = time.time()
 # Open file
-file = 'tests/P1.txt'
+file = 'tests/P3.txt'
 fh = open(file, 'r+')
 # Solve and print solution
 solution = solver(fh)
