@@ -60,7 +60,6 @@ class Problem:
 
         rem = -(len(str(self.time_step))+1)
         room_name = room_name[:rem]
-        
         return (room_name, max_likelihood)
 
     def create(self):
@@ -88,24 +87,14 @@ class Problem:
                         parent = parent + ' ' + neighboor + '_' + str(step-1)
                         ax += 1
                     # Append to list, a tuple witt all the info of the current node
-                    print(room.name, 'has -> ', ax, 'parents')
                     r_name = room.name + '_' + str(step)
                     baye.append((r_name, parent, self.get_prob(room = room)))
                     # Add respective sensors of the room if any
-                    # COMMENT THIS AND UNCOMMENT BELOW IF YOU WANT... (READ BELOW)
                     if room.sensor:
                         for s in room.sensor:
-                            print('And a sensor number -> ', s.name)
                             s_name = s.name+'_'+str(step)
                             r_name = room.name + '_' + str(step)
                             baye.append((s_name, r_name, self.get_prob(sensor = s)))
-                    # UNCOMMENT THIS PART IF YOU ONLY WANT TO ADD SENSOR ONLY AT THE RESPECTIVE MEASURE TIME
-                    # if room.sensor:
-                    #     for measurement in self.measurement_list:
-                    #        if measurement.time_step-1 == step and room.sensor.name in measurement.sensors:
-                    #             s_name = room.sensor.name+'_'+str(step)
-                    #             r_name = room.name + '_' + str(step)
-                    #             baye.append((s_name, r_name, self.get_prob(sensor = room.sensor)))
         # Uncomment to see bayes net
         #print(baye)
         return BayesNet(baye)
@@ -141,9 +130,6 @@ class Problem:
 
 
     def load(self, fh):
-        # note: fh is an opened file object
-        # note: self.initial may also be initialized here
-
         # Store Lines of file into a list variable lines = []
         lines = []
         for line in fh:
@@ -159,11 +145,6 @@ class Problem:
 
         # Create and store objects from the information of lines in this loop
         for line in lines:
-
-            # remove any word that is a space
-            # words = [x.strip(' ') for x in words]
-            # words = [value for value in words if value != ""]
-
             # If the line is about the Rooms
             if line[0] == 'R':
                 try:
@@ -239,7 +220,7 @@ def solver(fh):
 # Time for execution time
 start_time = time.time()
 # Open file
-file = 'tests/P3.txt'
+file = 'tests/P4.txt'
 fh = open(file, 'r+')
 # Solve and print solution
 solution = solver(fh)
